@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+
+class RegisterController extends Controller {
+
+    public function showRegistrationForm() {
+        return view('auth.register');
+    }
+
+    public function register(Request $request) {
+        $request->validate([
+            'name'     => 'required|max:100',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|min:6|confirmed',
+        ], [
+            'name.required'      => 'El nombre es obligatorio.',
+            'email.required'     => 'El email es obligatorio.',
+            'email.unique'       => 'Este email ya está registrado.',
+            'password.required'  => 'La contraseña es obligatoria.',
+            'password.min'       => 'Mínimo 6 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+        ]);
+
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        Auth::login($user);
+
+        return redirect()->route('tareas.index');
+    }
+}
